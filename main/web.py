@@ -10,7 +10,7 @@ import shutil
 import streamlit as st
 
 def conversion_mp3_mp4(sound_data, file_name):
-    """ 
+    """ 音声ファイルをwavに変換する
     sound_data : アップロードされた音声ファイル
     file_name : アップロードされた音声ファイル名
     """
@@ -18,7 +18,7 @@ def conversion_mp3_mp4(sound_data, file_name):
     if "mp3" in file_name:
         # print("mp3")
         sound = AudioSegment.from_file(sound_data, "mp3")
-        print(sound)
+        # print(sound)
         return sound, io.BufferedRandom(sound.export(format="wav"))
     elif "mp4" in file_name:
         # print("mp4")

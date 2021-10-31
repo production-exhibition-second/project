@@ -53,12 +53,13 @@ if file:
 
                 audio = r.record(source)
 
-            text = r.recognize_google(audio, language='ja-JP', show_all=False)
+            text = r.recognize_google(audio, language='ja-JP', show_all=False) # 英語にも太陽出来るようにできればする
             texts.append(text)
         text = "\n".join(texts)
-        st.write(text)
+        view = "、".join(texts)
+        st.write(view)
         
-        contents_one = f"ファイルから文字起こしファイルから文字起こしファイルから文字起こし"
+        # contents_one = f"ファイルから文字起こしファイルから文字起こしファイルから文字起こし"
         download_one = st.download_button("①ダウンロード", text)
 
 

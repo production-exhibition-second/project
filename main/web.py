@@ -67,6 +67,11 @@ st.title("②リアルタイムで文字起こし")
 st.write("説明")
 start_two = st.button("②開始")
 if start_two:
-    contents_two = f"リアルタイムで文字起こしリアルタイムで文字起こしリアルタイムで文字起こし"
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        r.adjust_for_ambient_noise(source)
+        audio = r.listen(source)
+    contents_two = f"{r.recognize_google(audio)}"
     download_two = st.download_button("②ダウンロード", contents_two)
     st.write(f"結果表示\n\n{contents_two}")
+

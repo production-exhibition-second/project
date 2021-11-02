@@ -30,7 +30,7 @@ st.write("説明")
 
 st.title("①ファイルから文字起こし")
 st.write("説明")
-file = st.file_uploader("", type=["mp3", 'wav'])
+file = st.file_uploader("", type=["mp3", 'wav', "mp4"])
 if file:
     st.audio(file)
     start_one = st.button("①開始")
@@ -76,9 +76,12 @@ if start_two:
         check = sr.Microphone() 
         past = time.time()
         texts = []
+        texts.append(f"{datetime.date.today()}\n")
 
         # マイクの入力の繰り返し
         while start_two == True or time.time() - past <= 60:
+            placeholder = st.empty()
+            placeholder.write("処理中・・・")
             r = sr.Recognizer()
             with check as source:
                 past = time.time()
@@ -87,18 +90,19 @@ if start_two:
 
             # データ生成
             now = datetime.datetime.now()
-            now = "{0:%Y-%m-%d %H:%M:%S}".format(now)
+            # now = "{0:%Y-%m-%d %H:%M:%S}".format(now)
+            now = "{0:%H:%M:%S}".format(now)
             contents_two = f"{now} {r.recognize_google(audio)}\n"
             texts.append(contents_two)
 
             # 表示
             contents_view = r.recognize_google(audio)
-            st.write(f"結果表示\n\n{contents_view}")
+            placeholder.write(f"{contents_view}\n\n処理中・・・")
+            # st.write(f"結果表示\n\n{contents_view}")
 
             # 停止が押下されたとき
             if stop_two == True:
                 contents_two = "\n".join(texts)
-                contents_two = f"{datetime.datetime.now().time()}: {contents_two}"
                 download_two = st.download_button("②ダウンロード", contents_two)
     except OSError as e:
         st.write('<span style="color:red;">マイクを接続してください</span>', unsafe_allow_html=True)

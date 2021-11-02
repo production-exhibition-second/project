@@ -5,6 +5,7 @@ import speech_recognition as sr
 import io, time, datetime
 import streamlit as st
 
+
 def conversion_mp3_mp4(sound_data, file_name):
     """ 音声ファイルをwavに変換する
     sound_data : アップロードされた音声ファイル
@@ -35,29 +36,43 @@ if file:
     st.audio(file)
     start_one = st.button("①開始")
     if start_one == True:
+
         placeholder = st.empty()
+        placeholder2 = st.empty()
         placeholder.write("処理中・・・")
+
         conversion = conversion_mp3_mp4(file, file.name)
-        # print(conversion[0])
-        # print(conversion[1])
+
+        # 無音部分のカット
         chunks = split_on_silence(conversion[0], min_silence_len=2000, silence_thresh=-40, keep_silence=1000)
-        # print(chunks)
+
+        # カットされた音声をメモリの一時的に保存する
         z = [ io.BufferedRandom(chunk.export(format="wav")) for i, chunk in enumerate(chunks)]
-        # print(z)
-        r = sr.Recognizer()
+
         texts = []
+        
+        r = sr.Recognizer()
         for i in z:
             with sr.AudioFile(i) as source:
 
                 audio = r.record(source)
 
-            text = r.recognize_google(audio, language='ja-JP', show_all=False) # 英語にも太陽出来るようにできればする
-            texts.append(text)
-        text = "\n".join(texts)
-        view = "、".join(texts)
+            try:
+                # テキストに変換
+                text = r.recognize_google(audio, language='ja-JP', show_all=False) # 英語にも太陽出来るようにできればする
+                texts.append(text)
+            except:
+                placeholder2.write("一部変換できませんでした")
+
         placeholder.write("完了！")
-        st.write(view)
-        download_one = st.download_button("①ダウンロード", text)
+
+        if len(texts) != 0:
+            text = "\n".join(texts) # テキストファイル用
+            view = "、".join(texts) # 表示用
+
+            st.write(view)
+
+            download_one = st.download_button("①ダウンロード", text)
 
 
 st.title("②リアルタイムで文字起こし")

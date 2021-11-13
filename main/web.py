@@ -1,4 +1,5 @@
 # 音声を扱う
+from re import T
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 import speech_recognition as sr
@@ -87,16 +88,27 @@ if start_two:
     with col2:
         stop_two = st.button("②停止")
     # マイク接続確認
+    # """
+    # マイクのtryのところをマイクの"check"だけにして
+    # マイクがあればelseの処理に行くようにした
+    # """
     try:
-        check = sr.Microphone() 
-        past = time.time()
-        texts = []
-        texts.append(f"{datetime.date.today()}\n")
-
+        check = sr.Microphone()
+    except OSError as e:
+        st.write('<span style="color:red;">マイクを接続してください</span>', unsafe_allow_html=True)
+    else: # エラーが無ければ処理に入る
         # マイクの入力の繰り返し
-        while start_two == True or time.time() - past <= 60:
-            placeholder = st.empty()
-            placeholder.write("処理中・・・")
+        texts = []
+        past = time.time()
+        texts.append(f"{datetime.date.today()}\n")
+        processing = True
+
+        while not stop_two and time.time() - past <= 60: # 両方がTrueの場合処理されるようになっている
+            contents_two = ''
+            if processing: # エラー処理がされても連続で表示されないように
+                placeholder = st.empty()
+                placeholder.write("処理中・・・")
+
             r = sr.Recognizer()
             with check as source:
                 past = time.time()
@@ -105,19 +117,26 @@ if start_two:
 
             # データ生成
             now = datetime.datetime.now()
-            # now = "{0:%Y-%m-%d %H:%M:%S}".format(now)
-            now = "{0:%H:%M:%S}".format(now)
-            contents_two = f"{now} {r.recognize_google(audio)}\n"
-            texts.append(contents_two)
+            now = f"{now:%H:%M:%S}"
 
-            # 表示
-            contents_view = r.recognize_google(audio)
-            placeholder.write(f"{contents_view}\n\n処理中・・・")
-            # st.write(f"結果表示\n\n{contents_view}")
+            try: # 変換が出来なかった時のtryを追加
+                contents_two = r.recognize_google(audio, language='ja-JP')
+            except sr.UnknownValueError:
+                processing = False
+                print('Error1')
+            except sr.RequestError as e:
+                processing = False
+                print('Error2')
+            else: # エラーが無ければ処理に入る
+                processing = True
 
-            # 停止が押下されたとき
-            if stop_two == True:
-                contents_two = "\n".join(texts)
-                download_two = st.download_button("②ダウンロード", contents_two)
-    except OSError as e:
-        st.write('<span style="color:red;">マイクを接続してください</span>', unsafe_allow_html=True)
+                if contents_two:
+                    placeholder.write(contents_two)
+
+                    contents_two = f"{now} {contents_two}"
+                    texts.append(contents_two)
+                
+                # 停止が押下されたとき
+                if stop_two == True:
+                    contents_two_l = "\n".join(texts)
+                    download_two = st.download_button("②ダウンロード", contents_two_l)

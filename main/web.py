@@ -27,11 +27,12 @@ def conversion_mp3_mp4(sound_data, file_name):
         sound = AudioSegment.from_file(sound_data, "wav")
         return sound, io.BufferedRandom(sound.export(format="wav"))
 
-st.title("タイトル")
-st.write("説明")
+st.title("らくらく文字起こし")
+st.write("会議の議事録作成、インタビュー・動画の音声をテキスト化などにご活用いただけます。")
 
-st.title("①ファイルから文字起こし")
-st.write("説明")
+st.write("<hr>", unsafe_allow_html=True)
+st.header("ファイルから文字起こし")
+st.write("音声・動画ファイルをアップロードするだけでテキストに変換")
 file = st.file_uploader("", type=["mp3", 'wav', "mp4"])
 if file:
     st.audio(file)
@@ -69,15 +70,19 @@ if file:
 
         if len(texts) != 0:
             text = "\n".join(texts) # テキストファイル用
-            view = "、".join(texts) # 表示用
-
+            view = "".join(texts) # 表示用
+            text = text.replace(" ", "").replace("です", "です\n").replace("ます", "ます\n")
+            view = view.replace(" ", "").replace("です", "です\n\n").replace("ます", "ます\n\n")
             st.write(view)
+            now = datetime.datetime.now()
+            now = f"{now:%Y-%m-%d:%H-%M-%S}"
+            download_one = st.download_button("①ダウンロード", text, f"file_{now}.txt")
 
-            download_one = st.download_button("①ダウンロード", text)
 
+st.write("<hr>", unsafe_allow_html=True)
+st.header("リアルタイムで文字起こし")
+st.write("マイク入力にてその場でテキストに変換")
 
-st.title("②リアルタイムで文字起こし")
-st.write("説明")
 col1, col2 = st.columns(2)
 # 開始ボタン
 with col1:
@@ -85,8 +90,6 @@ with col1:
 
 # 開始が押下されたとき
 if start_two:
-    with col2:
-        stop_two = st.button("②停止")
     # マイク接続確認
     # """
     # マイクのtryのところをマイクの"check"だけにして
@@ -102,8 +105,7 @@ if start_two:
         past = time.time()
         texts.append(f"{datetime.date.today()}\n")
         processing = True
-
-        while not stop_two and time.time() - past <= 60: # 両方がTrueの場合処理されるようになっている
+        while time.time() - past <= 60: # 両方がTrueの場合処理されるようになっている
             contents_two = ''
             if processing: # エラー処理がされても連続で表示されないように
                 placeholder = st.empty()
@@ -123,20 +125,25 @@ if start_two:
                 contents_two = r.recognize_google(audio, language='ja-JP')
             except sr.UnknownValueError:
                 processing = False
-                print('Error1')
+                # print('Error1')
             except sr.RequestError as e:
                 processing = False
-                print('Error2')
+                # print('Error2')
             else: # エラーが無ければ処理に入る
                 processing = True
 
-                if contents_two:
-                    placeholder.write(contents_two)
+                # 停止
+                if contents_two == ("停止" or "ストップ" or "終了" or "終わり"):
+                    contents_two_l = "\n".join(texts)
+                    # download_two = st.download_button("②ダウンロード", contents_two_l)
+                    with col2:
+                        now = datetime.datetime.now()
+                        now = f"{now:%Y-%m-%d:%H-%M-%S}"
+                        download_two = st.download_button("②ダウンロード", contents_two_l, f"file_{now}.txt")
+                    break
 
+                elif contents_two:
+                    placeholder.write(contents_two)
                     contents_two = f"{now} {contents_two}"
                     texts.append(contents_two)
                 
-                # 停止が押下されたとき
-                if stop_two == True:
-                    contents_two_l = "\n".join(texts)
-                    download_two = st.download_button("②ダウンロード", contents_two_l)

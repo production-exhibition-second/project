@@ -133,7 +133,10 @@ if start_two:
                 processing = True
 
                 # 停止
-                if contents_two == ("停止" or "ストップ" or "終了" or "終わり"):
+                if contents_two in ["停止", "ストップ", "終了", "終わり"]: # これだとコードが少なくできた
+                # if contents_two == "停止" or contents_two == "ストップ" or contents_two == "終了" or contents_two == "終わり":
+                # if contents_two == ("停止" or "ストップ" or "終了" or "終わり"): これは出来なかった
+                    placeholder.write('終了しました')
                     contents_two_l = "\n".join(texts)
                     # download_two = st.download_button("②ダウンロード", contents_two_l)
                     with col2:

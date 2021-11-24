@@ -81,7 +81,7 @@ if file:
 
 st.write("<hr>", unsafe_allow_html=True)
 st.header("リアルタイムで文字起こし")
-st.write("マイク入力にてその場でテキストに変換")
+st.write("マイク入力にてその場でテキストに変換\n\n「停止、ストップ、終了、終わり」いずれかで終了")
 
 col1, col2 = st.columns(2)
 # 開始ボタン

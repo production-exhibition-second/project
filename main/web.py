@@ -27,6 +27,11 @@ def conversion_mp3_mp4(sound_data, file_name):
         sound = AudioSegment.from_file(sound_data, "wav")
         return sound, io.BufferedRandom(sound.export(format="wav"))
 
+st.set_page_config(
+    page_title="らくらく文字起こし",
+    # layout="wide", # 全画面か中央表示か
+)
+
 st.title("らくらく文字起こし")
 st.write("会議の議事録作成、インタビュー・動画の音声をテキスト化などにご活用いただけます。")
 
@@ -36,12 +41,14 @@ st.write("音声・動画ファイルをアップロードするだけでテキ�
 file = st.file_uploader("", type=["mp3", 'wav', "mp4"])
 if file:
     st.audio(file)
-    start_one = st.button("①開始")
+    start_one = st.button("1開始")
     if start_one == True:
+        texts = []
+        dt = time.time() # 経過時間計測
 
         placeholder = st.empty()
         placeholder2 = st.empty()
-        placeholder.write("処理中・・・")
+        placeholder.warning("処理中・・・")
 
         conversion = conversion_mp3_mp4(file, file.name)
 
@@ -51,8 +58,7 @@ if file:
         # カットされた音声をメモリの一時的に保存する
         z = [ io.BufferedRandom(chunk.export(format="wav")) for i, chunk in enumerate(chunks)]
 
-        texts = []
-        
+
         r = sr.Recognizer()
         for i in z:
             with sr.AudioFile(i) as source:
@@ -64,19 +70,29 @@ if file:
                 text = r.recognize_google(audio, language='ja-JP', show_all=False) # 英語にも太陽出来るようにできればする
                 texts.append(text)
             except:
-                placeholder2.write("一部変換できませんでした")
+                # placeholder2.write("一部変換できませんでした")
+                placeholder2.warning("一部変換できませんでした") # ボックス追加
 
-        placeholder.write("完了！")
+        # placeholder.write('<span style="color:blue;">完了！</span>', unsafe_allow_html=True)
+        placeholder.success('完了！')
 
         if len(texts) != 0:
             text = "\n".join(texts) # テキストファイル用
             view = "".join(texts) # 表示用
             text = text.replace(" ", "").replace("です", "です\n").replace("ます", "ます\n")
             view = view.replace(" ", "").replace("です", "です\n\n").replace("ます", "ます\n\n")
-            st.write(view)
+            # st.write(view)
+            st.info(view)
+
             now = datetime.datetime.now()
             now = f"{now:%Y-%m-%d:%H-%M-%S}"
             download_one = st.download_button("①ダウンロード", text, f"file_{now}.txt")
+            st.balloons()
+
+            # elapsed_time = time.time() - dt # 経過時間計測
+            # st.write(f'ラップ{elapsed_time:.2f}')
+            # print(f'ラップ{elapsed_time:.2f}')
+
 
 
 st.write("<hr>", unsafe_allow_html=True)
@@ -86,7 +102,7 @@ st.write("マイク入力にてその場でテキストに変換\n\n「停止、
 col1, col2 = st.columns(2)
 # 開始ボタン
 with col1:
-    start_two = st.button("②開始")
+    start_two = st.button("2開始")
 
 # 開始が押下されたとき
 if start_two:
@@ -98,18 +114,20 @@ if start_two:
     try:
         check = sr.Microphone()
     except OSError as e:
-        st.write('<span style="color:red;">マイクを接続してください</span>', unsafe_allow_html=True)
+        # st.write('<span style="color:red;">マイクを接続してください</span>', unsafe_allow_html=True)
+        st.error('マイクを接続してください')
     else: # エラーが無ければ処理に入る
         # マイクの入力の繰り返し
         texts = []
         past = time.time()
         texts.append(f"{datetime.date.today()}\n")
         processing = True
-        while time.time() - past <= 60: # 両方がTrueの場合処理されるようになっている
+        stop = True
+        while stop: # time.time() - past <= 60: # 両方がTrueの場合処理されるようになっている
             contents_two = ''
             if processing: # エラー処理がされても連続で表示されないように
                 placeholder = st.empty()
-                placeholder.write("処理中・・・")
+                placeholder.write("入力待ち・・・")
 
             r = sr.Recognizer()
             with check as source:
@@ -136,8 +154,10 @@ if start_two:
                 if contents_two in ["停止", "ストップ", "終了", "終わり"]: # これだとコードが少なくできた
                 # if contents_two == "停止" or contents_two == "ストップ" or contents_two == "終了" or contents_two == "終わり":
                 # if contents_two == ("停止" or "ストップ" or "終了" or "終わり"): これは出来なかった
-                    placeholder.write('終了しました')
+                    # placeholder.write('終了しました')
+                    placeholder.success('終了しました') # ボックス追加
                     contents_two_l = "\n".join(texts)
+                    stop = False
                     # download_two = st.download_button("②ダウンロード", contents_two_l)
                     with col2:
                         now = datetime.datetime.now()
@@ -147,6 +167,7 @@ if start_two:
 
                 elif contents_two:
                     placeholder.write(contents_two)
+                    # placeholder.info(contents_two) # ボックス追加
                     contents_two = f"{now} {contents_two}"
                     texts.append(contents_two)
                 

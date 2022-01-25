@@ -14,6 +14,9 @@ import numpy
 import os
 import glob
 
+# 自然数ソート
+from natsort import natsorted
+
 # ファイルの分割
 def wav_cut(directory, time, filesave):
 
@@ -42,7 +45,7 @@ def wav_cut(directory, time, filesave):
         # print(X)
     
         for i in range(num_cut):
-            print(i)
+            # print(i)
             # 出力データを生成
             outf = f"{filesave}/{file_name}-{str(i)}.wav"
             start_cut = i*frames
@@ -87,8 +90,10 @@ def conversion_mp3_mp4(sound_data, file_name, save_dri):
 
 # ディレクトリーたち
 directory = os.path.dirname(__file__)
-save_audio = r"main\TEMP\audio" # wav変換ファイル一時保存
-audio_cat = r"main\TEMP\cat"    # ファイルカット一時保存
+# save_audio = r"main\TEMP\audio" # wav変換ファイル一時保存
+# audio_cat = r"main\TEMP\cat"    # ファイルカット一時保存
+save_audio = os.path.join(directory, r"TEMP\audio") # wav変換ファイル一時保存
+audio_cat = os.path.join(directory, r"TEMP\cat")    # ファイルカット一時保存
 
 y = glob.glob(f'{save_audio}/*')
 y2 = glob.glob(f'{audio_cat}/*')
@@ -127,7 +132,7 @@ if file:
         conversion = conversion_mp3_mp4(file, file.name, save_audio)
         audio_dri = glob.glob(f'{save_audio}/*')
         wav_cut(audio_dri, cut_time, audio_cat)
-        datas = glob.glob(f'{audio_cat}\*')
+        datas = natsorted(glob.glob(f'{audio_cat}\*'))
 
         r = sr.Recognizer()
         for i in datas:
@@ -139,9 +144,14 @@ if file:
                 # テキストに変換
                 text = r.recognize_google(audio, language='ja-JP', show_all=False) # 英語にも太陽出来るようにできればする
                 texts.append(text)
+                answer = '変換完了'
             except:
                 # placeholder2.write("一部変換できませんでした")
                 placeholder2.warning("一部変換できませんでした") # ボックス追加
+                answer = '変換できなかった'
+            
+            # 何が変換されたかチェック用
+            print(f'{i} {answer}')
 
         # placeholder.write('<span style="color:blue;">完了！</span>', unsafe_allow_html=True)
         placeholder.success('完了！')

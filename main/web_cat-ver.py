@@ -92,8 +92,8 @@ def conversion_mp3_mp4(sound_data, file_name, save_dri):
 directory = os.path.dirname(__file__)
 # save_audio = r"main\TEMP\audio" # wav変換ファイル一時保存
 # audio_cat = r"main\TEMP\cat"    # ファイルカット一時保存
-save_audio = os.path.join(directory, r"TEMP\audio") # wav変換ファイル一時保存
-audio_cat = os.path.join(directory, r"TEMP\cat")    # ファイルカット一時保存
+save_audio = os.path.join(directory, r"TEMP/audio") # wav変換ファイル一時保存
+audio_cat = os.path.join(directory, r"TEMP/cat")    # ファイルカット一時保存
 
 y = glob.glob(f'{save_audio}/*')
 y2 = glob.glob(f'{audio_cat}/*')
@@ -132,7 +132,7 @@ if file:
         conversion = conversion_mp3_mp4(file, file.name, save_audio)
         audio_dri = glob.glob(f'{save_audio}/*')
         wav_cut(audio_dri, cut_time, audio_cat)
-        datas = natsorted(glob.glob(f'{audio_cat}\*'))
+        datas = natsorted(glob.glob(f'{audio_cat}/*'))
 
         r = sr.Recognizer()
         for i in datas:
